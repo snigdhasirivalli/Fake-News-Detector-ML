@@ -1,0 +1,21 @@
+Fake News Detector — Model Metrics
+========================================
+Algorithm   : PassiveAggressiveClassifier
+Vectorizer  : TF-IDF (max_features=5000, ngram=(1,2))
+Train rows  : 57,080
+Test  rows  : 14,271
+Accuracy    : 95.77%
+
+Classification Report:
+              precision    recall  f1-score   support
+
+    Real (0)     0.9674    0.9456    0.9564      7006
+    Fake (1)     0.9487    0.9693    0.9589      7265
+
+    accuracy                         0.9577     14271
+   macro avg     0.9581    0.9575    0.9576     14271
+weighted avg     0.9579    0.9577    0.9577     14271
+
+Confusion Matrix:
+[[6625  381]
+ [ 223 7042]]
