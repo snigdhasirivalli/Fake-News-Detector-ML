@@ -4,18 +4,18 @@ Algorithm   : LogisticRegression
 Vectorizer  : TF-IDF (max_features=10000, ngram=(1,2))
 Train rows  : 57,080
 Test  rows  : 14,271
-Accuracy    : 96.94%
+Accuracy    : 94.21%
 
 Classification Report:
               precision    recall  f1-score   support
 
-    Real (0)     0.9750    0.9623    0.9686      7006
-    Fake (1)     0.9641    0.9762    0.9701      7265
+    Real (0)     0.9468    0.9346    0.9407      7006
+    Fake (1)     0.9377    0.9493    0.9435      7265
 
-    accuracy                         0.9694     14271
-   macro avg     0.9695    0.9693    0.9694     14271
-weighted avg     0.9694    0.9694    0.9694     14271
+    accuracy                         0.9421     14271
+   macro avg     0.9423    0.9420    0.9421     14271
+weighted avg     0.9422    0.9421    0.9421     14271
 
 Confusion Matrix:
-[[6742  264]
- [ 173 7092]]
+[[6548  458]
+ [ 368 6897]]
