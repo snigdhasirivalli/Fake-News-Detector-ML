@@ -5,9 +5,10 @@ Step 3 — TF-IDF Vectorization + Model Training Pipeline
 
 Pipeline:
   1. Load & clean the full WELFake dataset (via src.preprocess)
-  2. TF-IDF vectorization  (max_features=5000, ngram_range=(1,2))
-  3. 80/20 train-test split
-  4. PassiveAggressiveClassifier  (fast, online, great for text)
+  2. TF-IDF vectorization  (max_features=10000, ngram_range=(1,2))
+  3. 80/20 train-test split  (stratified)
+  4. LogisticRegression  — better calibration & real-world generalization
+     than PassiveAggressiveClassifier on out-of-distribution text
   5. Evaluate  →  Accuracy + full Classification Report
   6. Save model  →  models/fake_news_model.pkl
      Save vectorizer  →  models/tfidf_vectorizer.pkl
@@ -22,7 +23,7 @@ import joblib
 import numpy as np
 
 from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.linear_model import PassiveAggressiveClassifier
+from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import (
     accuracy_score,
@@ -100,13 +101,13 @@ def main():
     # ------------------------------------------------------------------
     # 3. TF-IDF Vectorization
     # ------------------------------------------------------------------
-    _step("Fitting TF-IDF vectorizer  (max_features=5000, ngram_range=(1,2))...")
+    _step("Fitting TF-IDF vectorizer  (max_features=10000, ngram_range=(1,2))...")
     t0 = time.perf_counter()
     vectorizer = TfidfVectorizer(
-        max_features=5000,
+        max_features=10000,       # increased from 5k for richer vocabulary
         ngram_range=(1, 2),
-        sublinear_tf=True,       # apply log normalization to TF
-        min_df=2,                # ignore terms that appear in < 2 docs
+        sublinear_tf=True,        # apply log normalization to TF
+        min_df=2,                 # ignore terms that appear in < 2 docs
         strip_accents="unicode",
     )
     X_train_tfidf = vectorizer.fit_transform(X_train)
@@ -118,15 +119,20 @@ def main():
     print(f"     Test  matrix     : {X_test_tfidf.shape}")
 
     # ------------------------------------------------------------------
-    # 4. Train — PassiveAggressiveClassifier
+    # 4. Train — LogisticRegression
+    #    Chosen over PassiveAggressiveClassifier because it:
+    #    - Generalizes better to real-world, out-of-distribution news
+    #    - Provides well-calibrated probabilities
+    #    - Is less sensitive to the specific writing style in training data
     # ------------------------------------------------------------------
-    _step("Training PassiveAggressiveClassifier...")
+    _step("Training LogisticRegression (this may take ~1 minute)...")
     t0 = time.perf_counter()
-    model = PassiveAggressiveClassifier(
+    model = LogisticRegression(
         max_iter=1000,
         random_state=42,
-        tol=1e-3,
-        C=1.0,                   # regularization strength
+        C=5.0,                    # regularization (higher = less regularized)
+        solver="lbfgs",
+        n_jobs=-1,                # use all CPU cores
     )
     model.fit(X_train_tfidf, y_train)
     elapsed = time.perf_counter() - t0
@@ -171,8 +177,8 @@ def main():
     metrics_text = (
         f"Fake News Detector — Model Metrics\n"
         f"{'='*40}\n"
-        f"Algorithm   : PassiveAggressiveClassifier\n"
-        f"Vectorizer  : TF-IDF (max_features=5000, ngram=(1,2))\n"
+        f"Algorithm   : LogisticRegression\n"
+        f"Vectorizer  : TF-IDF (max_features=10000, ngram=(1,2))\n"
         f"Train rows  : {len(X_train):,}\n"
         f"Test  rows  : {len(X_test):,}\n"
         f"Accuracy    : {accuracy * 100:.2f}%\n\n"

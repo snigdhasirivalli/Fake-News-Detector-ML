@@ -344,14 +344,17 @@ if predict_clicked:
 
             cleaned    = clean_text(news_input)
             vectorized = vectorizer.transform([cleaned])
-            prediction = model.predict(vectorized)[0]
-
-            # Decision function score → convert to a 0-1 confidence
-            decision_score = model.decision_function(vectorized)[0]
-            # Sigmoid-like normalization for display
-            import math
-            conf_raw  = 1 / (1 + math.exp(-abs(decision_score)))
-            confidence = round(conf_raw * 100, 1)
+            
+            # Use predict_proba for LogisticRegression to get actual probability
+            probabilities = model.predict_proba(vectorized)[0]
+            
+            # Class 0 = Real, Class 1 = Fake
+            prob_fake = probabilities[1]
+            prediction = 1 if prob_fake >= 0.5 else 0
+            
+            # Confidence is the probability of the predicted class
+            confidence_raw = prob_fake if prediction == 1 else (1.0 - prob_fake)
+            confidence = round(confidence_raw * 100, 1)
 
         if prediction == 1:
             st.markdown(f"""
