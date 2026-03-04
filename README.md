@@ -1,4 +1,4 @@
-# 📰 Fake News Detector — ML Project
+#  Fake News Detector — ML Project
 
 A machine-learning pipeline that classifies news articles as **Real** or **Fake**
 using the [WELFake Dataset](https://www.kaggle.com/datasets/saurabhshahane/fake-news-classification)
@@ -6,7 +6,7 @@ using the [WELFake Dataset](https://www.kaggle.com/datasets/saurabhshahane/fake-
 
 ---
 
-## 🗂 Project Structure
+##  Project Structure
 
 ```
 fake_news_detection/
@@ -24,7 +24,7 @@ fake_news_detection/
 
 ---
 
-## ⚡ Quick Start
+##  Quick Start
 
 ### 1. Clone the repository
 ```bash
@@ -63,7 +63,7 @@ python notebooks/01_load_dataset.py
 
 ---
 
-## 📦 Key Dependencies
+## Key Dependencies
 
 | Library | Purpose |
 |---|---|
@@ -75,10 +75,3 @@ python notebooks/01_load_dataset.py
 
 ---
 
-## 🗺 Roadmap
-
-- [x] Step 1 — Environment & dataset setup
-- [ ] Step 2 — Data cleaning & EDA
-- [ ] Step 3 — Feature engineering (TF-IDF)
-- [ ] Step 4 — Model training & evaluation
-- [ ] Step 5 — Streamlit app deployment
