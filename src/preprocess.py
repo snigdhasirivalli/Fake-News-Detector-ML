@@ -101,12 +101,21 @@ DATA_PATH = pathlib.Path(__file__).parent.parent / "data" / "WELFake_Dataset.csv
 
 def load_data(path: pathlib.Path = DATA_PATH) -> pd.DataFrame:
     """
-    Load the WELFake CSV, drop rows with missing 'text', and return a clean
-    DataFrame with columns: [title, text, label].
+    Load the WELFake CSV and return a clean DataFrame.
+
+    Null handling
+    -------------
+    - Rows with a missing or empty 'text' column are dropped entirely.
+    - Rows with a missing 'title' have it replaced with an empty string
+      so the downstream 'content' column is never broken.
+
+    New column
+    ----------
+    'content' = title + " " + text  (the field the model will train on)
     """
     if not path.exists():
         raise FileNotFoundError(
-            f"\n❌  Dataset not found: {path}\n"
+            f"\n  Dataset not found: {path}\n"
             "    Download WELFake_Dataset.csv from Kaggle and place it in data/"
         )
 
@@ -116,13 +125,22 @@ def load_data(path: pathlib.Path = DATA_PATH) -> pd.DataFrame:
     df = df.drop(columns=["Unnamed: 0"], errors="ignore")
 
     before = len(df)
-    # Drop rows where 'text' is null or empty
+
+    # --- Null handling: text (critical) ---
     df = df.dropna(subset=["text"])
     df = df[df["text"].str.strip() != ""]
-    after = len(df)
+    after_text = len(df)
+    if before != after_text:
+        print(f"  [INFO] Dropped {before - after_text:,} rows with missing/empty 'text'.")
 
-    if before != after:
-        print(f"  [INFO] Dropped {before - after:,} rows with missing/empty 'text'.")
+    # --- Null handling: title (non-critical — fill with empty string) ---
+    null_titles = df["title"].isna().sum()
+    if null_titles:
+        print(f"  [INFO] Filled {null_titles:,} missing 'title' values with empty string.")
+    df["title"] = df["title"].fillna("")
+
+    # --- Combine title + text into a single 'content' column ---
+    df["content"] = df["title"].str.strip() + " " + df["text"].str.strip()
 
     df = df.reset_index(drop=True)
     return df
@@ -142,32 +160,32 @@ def main():
     print(f"  Total articles loaded : {len(df):,}")
     print(f"  Label distribution    : {df['label'].value_counts().to_dict()}")
 
-    # Work on a small sample
+    # Work on a small sample of 'content' (title + text combined)
     sample = df.head(100).copy()
-    print(f"\n  Applying clean_text() to first {len(sample)} rows...")
+    print(f"\n  Applying clean_text() to first {len(sample)} rows (content column)...")
 
-    sample["clean_text"] = sample["text"].apply(clean_text)
+    sample["clean_content"] = sample["content"].apply(clean_text)
 
     print(f"  Done!\n")
 
     # -----------------------------------------------------------------------
     # Before / After comparison — pick row 0 for the demo
     # -----------------------------------------------------------------------
-    idx = 0
-    raw  = sample.loc[idx, "text"]
-    clean = sample.loc[idx, "clean_text"]
+    idx   = 0
+    raw   = sample.loc[idx, "content"]
+    clean = sample.loc[idx, "clean_content"]
     label = "FAKE" if sample.loc[idx, "label"] == 1 else "REAL"
 
     print("-" * 65)
     print(f"  ARTICLE #{idx}  |  Label: {label}")
     print("-" * 65)
 
-    # Show first 400 chars of raw text
-    print("\n  BEFORE (raw) :")
+    # Show first 400 chars of raw content
+    print("\n  BEFORE (raw title + text) :")
     print(f"  {raw[:400].strip()!r}")
 
-    # Show first 400 chars of cleaned text
-    print("\n  AFTER (cleaned + stemmed) :")
+    # Show first 400 chars of cleaned content
+    print("\n  AFTER  (lowercased, de-stopped, stemmed) :")
     print(f"  {clean[:400].strip()!r}")
 
     print("\n" + "-" * 65)
