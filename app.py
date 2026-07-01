@@ -42,6 +42,24 @@ def _load_nltk():
 
 _STOP_WORDS, _STEMMER = _load_nltk()
 
+# Watermark pattern — must match the one used during training
+_WATERMARK_PATTERN = re.compile(
+    r"\b("
+    r"reuters?|breitbart|getty\s*images?|associated\s*press|"
+    r"featured?\s*image|read\s*more|follow\s+us\s+on|"
+    r"follow\s+on\s+twitter|via\s+breitbart|gettyi|"
+    r"photo\s*credit|image\s*credit|watch\s*video|"
+    r"click\s*here\s*to\s*read"
+    r")\b",
+    re.IGNORECASE,
+)
+
+def strip_watermarks(text: str) -> str:
+    """Remove dataset-specific publication watermarks before classification."""
+    if not isinstance(text, str):
+        return ""
+    return _WATERMARK_PATTERN.sub(" ", text)
+
 def clean_text(text: str) -> str:
     """Full NLP cleaning pipeline (lowercase → regex → tokenize → stem)."""
     if not isinstance(text, str):
@@ -342,13 +360,14 @@ if predict_clicked:
         with st.spinner("Analyzing article…"):
             time.sleep(0.6)   # small delay so the spinner is visible
 
-            cleaned    = clean_text(news_input)
+            # Strip watermarks first (must match training pipeline)
+            stripped   = strip_watermarks(news_input)
+            cleaned    = clean_text(stripped)
             vectorized = vectorizer.transform([cleaned])
             
-            # Use predict_proba for LogisticRegression to get actual probability
-            probabilities = model.predict_proba(vectorized)[0]
-            
+            # predict_proba → calibrated probabilities
             # Class 0 = Real, Class 1 = Fake
+            probabilities = model.predict_proba(vectorized)[0]
             prob_fake = probabilities[1]
             prediction = 1 if prob_fake >= 0.5 else 0
             

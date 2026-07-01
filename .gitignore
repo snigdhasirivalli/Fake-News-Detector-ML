@@ -24,8 +24,14 @@ data/*.tsv
 data/*.json
 data/*.zip
 data/*.gz
+data/*.parquet
 # (keep the .gitkeep placeholder)
 !data/.gitkeep
+
+# --- Temp / debug files ---
+bad_chars.txt
+debug_coefs.txt
+tmp_test.txt
 
 # --- Trained models ---
 # .pkl files ARE committed (small size, needed for Streamlit Cloud deployment)

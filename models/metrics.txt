@@ -1,21 +1,22 @@
-Fake News Detector — Model Metrics
+Fake News Detector -- Model Metrics
 ========================================
-Algorithm   : LogisticRegression
+Algorithm   : LogisticRegression + CalibratedClassifierCV (isotonic)
 Vectorizer  : TF-IDF (max_features=10000, ngram=(1,2))
+Watermarks  : Stripped from raw text before cleaning
 Train rows  : 57,080
 Test  rows  : 14,271
-Accuracy    : 94.21%
+Accuracy    : 94.79%
 
 Classification Report:
               precision    recall  f1-score   support
 
-    Real (0)     0.9468    0.9346    0.9407      7006
-    Fake (1)     0.9377    0.9493    0.9435      7265
+    Real (0)     0.9516    0.9419    0.9467      7006
+    Fake (1)     0.9445    0.9538    0.9491      7265
 
-    accuracy                         0.9421     14271
-   macro avg     0.9423    0.9420    0.9421     14271
-weighted avg     0.9422    0.9421    0.9421     14271
+    accuracy                         0.9479     14271
+   macro avg     0.9480    0.9478    0.9479     14271
+weighted avg     0.9480    0.9479    0.9479     14271
 
 Confusion Matrix:
-[[6548  458]
- [ 368 6897]]
+[[6599  407]
+ [ 336 6929]]
